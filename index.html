@@ -1797,11 +1797,14 @@ function onDrop(e, di, gi, ei) {
   // Only allow reorder within same group
   if (src.di !== di || src.gi !== gi) return;
   var exs = days[di].groups[gi].exercises;
+  var oldOrder = exs.map(function(_,i){ return i; });
   var moved = exs.splice(src.ei, 1)[0];
   var targetIdx = src.ei < ei ? ei - 1 : ei;
   exs.splice(targetIdx, 0, moved);
-  // Move progress/weights too
-  reindexExercise(di, gi, src.ei, targetIdx);
+  var newOrder = oldOrder.slice();
+  newOrder.splice(src.ei, 1);
+  newOrder.splice(targetIdx, 0, src.ei);
+  rekeyExercises(di, gi, oldOrder, newOrder);
   saveDays(); render();
 }
 
@@ -1913,8 +1916,14 @@ function onDropEnd(e, di, gi) {
   _dragSrc = null;
   if (src.di !== di || src.gi !== gi) return;
   var exs = days[di].groups[gi].exercises;
+  var n = exs.length;
+  var oldOrder = exs.map(function(_,i){ return i; });
   var moved = exs.splice(src.ei, 1)[0];
-  exs.push(moved); // always move to bottom
+  exs.push(moved);
+  var newOrder = oldOrder.slice();
+  newOrder.splice(src.ei, 1);
+  newOrder.push(src.ei);
+  rekeyExercises(di, gi, oldOrder, newOrder);
   saveDays(); render();
 }
 
@@ -2353,6 +2362,94 @@ function showIOStatus(msg, isErr) {
   el2.textContent = msg;
   el2.className = 'io-status visible' + (isErr ? ' err' : '');
   setTimeout(function() { el2.className = 'io-status'; }, 3000);
+}
+
+
+function rekeyExercises(di, gi, oldOrder, newOrder) {
+  // oldOrder and newOrder are arrays of exercise indexes before/after move
+  // Rekey all progress, weights, setreps for this di/gi
+  var weeks = [];
+  // Collect all week numbers referenced
+  Object.keys(progress).forEach(function(k) {
+    var p = k.split('-');
+    if (parseInt(p[1])===di && parseInt(p[2])===gi) {
+      var w = parseInt(p[0]);
+      if (weeks.indexOf(w) < 0) weeks.push(w);
+    }
+  });
+  Object.keys(weights).forEach(function(k) {
+    var p = k.split('-');
+    if (parseInt(p[1])===di && parseInt(p[2])===gi) {
+      var w = parseInt(p[0]);
+      if (weeks.indexOf(w) < 0) weeks.push(w);
+    }
+  });
+
+  if (weeks.length === 0) weeks.push(currentWeek);
+
+  weeks.forEach(function(wk) {
+    // Snapshot current values
+    var snapP = {}, snapW = {}, snapR = {};
+    newOrder.forEach(function(oldEi, newEi) {
+      // progress
+      var pk = wk+'-'+di+'-'+gi+'-'+oldEi;
+      if (progress[pk] !== undefined) snapP[newEi] = progress[pk];
+      // weights (multiple sets)
+      for (var si = 0; si < 20; si++) {
+        var wk2 = wk+'-'+di+'-'+gi+'-'+oldEi+'-'+si;
+        if (weights[wk2] !== undefined) {
+          if (!snapW[newEi]) snapW[newEi] = {};
+          snapW[newEi][si] = weights[wk2];
+        }
+        // setreps
+        var rk = wk+'-'+di+'-'+gi+'-'+oldEi+'-r'+si;
+        var srData = JSON.parse(localStorage.getItem('setreps_v9')||'{}');
+        if (srData[rk] !== undefined) {
+          if (!snapR[newEi]) snapR[newEi] = {};
+          snapR[newEi][si] = srData[rk];
+        }
+      }
+    });
+
+    // Delete old keys for this di/gi/wk
+    Object.keys(progress).forEach(function(k) {
+      var p = k.split('-');
+      if (parseInt(p[0])===wk && parseInt(p[1])===di && parseInt(p[2])===gi) delete progress[k];
+    });
+    Object.keys(weights).forEach(function(k) {
+      var p = k.split('-');
+      if (parseInt(p[0])===wk && parseInt(p[1])===di && parseInt(p[2])===gi) delete weights[k];
+    });
+
+    // Write new keys
+    Object.keys(snapP).forEach(function(newEi) {
+      progress[wk+'-'+di+'-'+gi+'-'+newEi] = snapP[newEi];
+    });
+    Object.keys(snapW).forEach(function(newEi) {
+      Object.keys(snapW[newEi]).forEach(function(si) {
+        weights[wk+'-'+di+'-'+gi+'-'+newEi+'-'+si] = snapW[newEi][si];
+      });
+    });
+
+    // Rekey setreps
+    var srData = JSON.parse(localStorage.getItem('setreps_v9')||'{}');
+    // Delete old
+    Object.keys(srData).forEach(function(k) {
+      var p = k.split('-');
+      if (parseInt(p[0])===wk && parseInt(p[1])===di && parseInt(p[2])===gi) delete srData[k];
+    });
+    // Write new
+    Object.keys(snapR).forEach(function(newEi) {
+      Object.keys(snapR[newEi]).forEach(function(si) {
+        srData[wk+'-'+di+'-'+gi+'-'+newEi+'-r'+si] = snapR[newEi][si];
+      });
+    });
+    localStorage.setItem('setreps_v9', JSON.stringify(srData));
+    setReps = JSON.parse(localStorage.getItem('setreps_v9')||'{}');
+  });
+
+  saveProgress();
+  saveWeights();
 }
 
 </script>
