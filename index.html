@@ -681,7 +681,7 @@ function saveFeedback() { localStorage.setItem(FEEDBACK_KEY, JSON.stringify(feed
 function saveRestDays() { localStorage.setItem(RESTDAYS_KEY, JSON.stringify(restDays)); }
 function saveWeekDow()  { localStorage.setItem(WEEKDOW_KEY,  JSON.stringify(weekDow));  }
 function saveTotalWeeks(){ localStorage.setItem(TOTAL_WEEKS_KEY, String(totalWeeks)); }
-function load(k,def)   { try { return JSON.parse(localStorage.getItem(k)) || def; } catch { return def; } }
+function load(k,def)   { try { var v=JSON.parse(localStorage.getItem(k)); return v !== null ? v : def; } catch(e) { return def; } }
 function esc(s)        { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function totalEx(di)   { return days[di].groups.reduce((a,g)=>a+g.exercises.length,0); }
 function countDone(di) { let n=0; days[di].groups.forEach((g,gi)=>g.exercises.forEach((_,ei)=>{ if(progress[pKey(di,gi,ei)]) n++; })); return n; }
@@ -1076,7 +1076,7 @@ function toggleEditMode() { toggleEditModeFromDrawer(); }
 
 function toggleExercise(di,gi,ei) {
   if(editMode||isPastWeek()) return;
-  const k=pKey(di,gi,ei); progress[k]=!progress[k]; saveProgress(); render();
+  const k=pKey(di,gi,ei); if(progress[k]) delete progress[k]; else progress[k]=true; saveProgress(); render();
 }
 function updateSetWeight(di,gi,ei,si,val) {
   if(isPastWeek()) return;
