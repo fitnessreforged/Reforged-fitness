@@ -429,6 +429,7 @@
   .cal-inline-day-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
   .cal-inline-day.today .cal-inline-day-num{color:var(--accent);font-weight:700;}
   .cal-inline-day.other-month .cal-inline-day-num{opacity:0.2;}
+  .cal-day-clickable:active{background:rgba(var(--accent-rgb),0.12);}
 
 
   .cal-dot-row{display:flex;gap:3px;margin-top:3px;align-items:center;justify-content:center;min-height:7px;}
@@ -2168,7 +2169,10 @@ function buildInlineCal() {
     if      (status === 'done')    dot = '<div class="cal-dot-row"><div class="cal-dot done"></div></div>';
     else if (status === 'partial') dot = '<div class="cal-dot-row"><div class="cal-dot partial"></div></div>';
     else if (status === 'rest')    dot = '<div class="cal-dot-row"><div class="cal-dot rest"></div></div>';
-    html += '<div class="cal-inline-day' + (isToday ? ' today' : '') + '">'
+    var wd = getWeekAndDow(_iCalYear, _iCalMonth + 1, d);
+    var clickable = wd && getDiForDow(wd.week, wd.dow) >= 0;
+    var clickAttr = clickable ? ' onclick="navToCalDay(' + _iCalYear + ',' + (_iCalMonth+1) + ',' + d + ')" style="cursor:pointer;"' : '';
+    html += '<div class="cal-inline-day' + (isToday ? ' today' : '') + (clickable ? ' cal-day-clickable' : '') + '"' + clickAttr + '>'
           + '<span class="cal-inline-day-num">' + d + '</span>'
           + dot
           + '</div>';
@@ -2450,6 +2454,29 @@ function rekeyExercises(di, gi, oldOrder, newOrder) {
 
   saveProgress();
   saveWeights();
+}
+
+
+function navToCalDay(year, month1, day) {
+  var wd = getWeekAndDow(year, month1, day);
+  if (!wd) return;
+  var di = getDiForDow(wd.week, wd.dow);
+  if (di < 0) return;
+
+  // Navigate to that week and day
+  currentWeek = wd.week;
+  userPickedWeek = (wd.week !== currentActualWeek());
+  currentDay = di;
+
+  // Sync totalWeeks if needed
+  if (currentWeek > totalWeeks) {
+    totalWeeks = currentWeek;
+    saveTotalWeeks();
+  }
+
+  // Close the drawer and render
+  closeDrawer();
+  render();
 }
 
 </script>
