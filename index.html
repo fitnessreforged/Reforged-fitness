@@ -2261,10 +2261,30 @@ function exportData() {
 function importData(input) {
   var file = input.files[0];
   if (!file) return;
+
+  // Show loading state immediately
+  var s1 = document.getElementById('ioStatus');
+  var s2 = document.getElementById('ioStatus2');
+  function setStatus(msg, isErr) {
+    if (s1) { s1.textContent = msg; s1.className = 'io-status visible' + (isErr?' err':''); }
+    if (s2) { s2.textContent = msg; s2.className = 'io-status visible' + (isErr?' err':''); }
+  }
+  setStatus('Reading file...', false);
+
   var reader = new FileReader();
   reader.onload = function(e) {
     try {
-      var data = JSON.parse(e.target.result);
+      var raw = e.target.result;
+      setStatus('Parsing data...', false);
+      var data = JSON.parse(raw);
+
+      // Validate it looks like a Reforged backup
+      if (!data['workout_v9'] && !data['progress_v9'] && !data['weights_v9']) {
+        setStatus('Not a valid Reforged backup file.', true);
+        input.value = '';
+        return;
+      }
+
       var count = 0;
       ALL_STORAGE_KEYS.forEach(function(k) {
         if (data[k] !== undefined) {
@@ -2272,15 +2292,23 @@ function importData(input) {
           count++;
         }
       });
-      // Always clear start date and week count so they recalculate to current week
+
+      // Clear start date and week count so they recalculate fresh
       localStorage.removeItem('start_date_v9');
       localStorage.removeItem('total_weeks_v9');
-      showIOStatus(count + ' items restored. Reloading...', false);
-      setTimeout(function() { location.reload(); }, 1500);
+
+      setStatus('✓ Restored ' + count + ' records. Reloading...', false);
+      setTimeout(function() { location.reload(); }, 1800);
+
     } catch(err) {
-      showIOStatus('Invalid backup file.', true);
+      setStatus('Error: ' + err.message, true);
     }
   };
+
+  reader.onerror = function() {
+    setStatus('Could not read file.', true);
+  };
+
   reader.readAsText(file);
   input.value = '';
 }
