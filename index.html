@@ -440,6 +440,16 @@
   .cal-legend{display:flex;gap:14px;padding:6px 0 10px;flex-wrap:wrap;}
   .cal-legend-item{display:flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
 
+
+  .import-hidden{display:none;}
+  .io-row{display:flex;gap:8px;margin-top:8px;}
+  .io-btn{flex:1;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:10px 8px;cursor:pointer;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);color:var(--text);text-align:center;}
+  .io-btn.accent{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+  .io-btn:active{opacity:0.75;}
+  .io-status{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--accent);text-align:center;padding:6px 0;display:none;}
+  .io-status.visible{display:block;}
+  .io-status.err{color:var(--accent2);}
+
 </style>
 </head>
 <body>
@@ -555,6 +565,15 @@
           <div class="drawer-setting-item" onclick="resetWeekStart()">
             <span class="drawer-setting-label">Reset Week Start</span>
             <span class="drawer-setting-value" id="weekStartLabel">›</span>
+          </div>
+          <div class="drawer-setting-item" style="flex-direction:column;align-items:flex-start;gap:6px;">
+            <span class="drawer-setting-label">Data Backup</span>
+            <div class="io-row">
+              <button type="button" class="io-btn" onclick="exportData()">&#x2193; Export</button>
+              <button type="button" class="io-btn accent" onclick="document.getElementById('importFileInput').click()">&#x2191; Import</button>
+            </div>
+            <div class="io-status" id="ioStatus"></div>
+            <input type="file" id="importFileInput" class="import-hidden" accept=".json" onchange="importData(this)">
           </div>
           <div class="drawer-setting-item" onclick="openFeedbackForm()">
             <span class="drawer-setting-label">Send Feedback</span>
@@ -2210,6 +2229,69 @@ function getDayStatus(year, month1, day) {
   if (done === 0)  return '';       // workout day but nothing logged yet
   if (done === total) return 'done';
   return 'partial';
+}
+
+
+// ── DATA IMPORT / EXPORT ──────────────────────────────────────────────────────
+var ALL_STORAGE_KEYS = [
+  'workout_v9','program_v9','theme_v9','progress_v9','weights_v9',
+  'start_date_v9','total_weeks_v9','feedback_v9','restdays_v9',
+  'weekdow_v9','setreps_v9'
+];
+
+function exportData() {
+  var data = {};
+  ALL_STORAGE_KEYS.forEach(function(k) {
+    var val = localStorage.getItem(k);
+    if (val !== null) data[k] = val;
+  });
+  var json    = JSON.stringify(data, null, 2);
+  var blob    = new Blob([json], {type: 'application/json'});
+  var url     = URL.createObjectURL(blob);
+  var a       = document.createElement('a');
+  var date    = new Date();
+  var stamp   = date.getFullYear() + '-'
+    + String(date.getMonth()+1).padStart(2,'0') + '-'
+    + String(date.getDate()).padStart(2,'0');
+  a.href      = url;
+  a.download  = 'reforged-backup-' + stamp + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showIOStatus('Backup downloaded!', false);
+}
+
+function importData(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      var count = 0;
+      ALL_STORAGE_KEYS.forEach(function(k) {
+        if (data[k] !== undefined) {
+          localStorage.setItem(k, data[k]);
+          count++;
+        }
+      });
+      showIOStatus(count + ' items restored. Reloading...', false);
+      setTimeout(function() { location.reload(); }, 1500);
+    } catch(err) {
+      showIOStatus('Invalid backup file.', true);
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function showIOStatus(msg, isErr) {
+  var el = document.getElementById('ioStatus');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'io-status visible' + (isErr ? ' err' : '');
+  setTimeout(function() { el.className = 'io-status'; }, 3000);
 }
 
 </script>
