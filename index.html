@@ -450,6 +450,28 @@
   .io-status.visible{display:block;}
   .io-status.err{color:var(--accent2);}
 
+
+  .gear-btn{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:4px 8px;display:flex;align-items:center;justify-content:center;transition:color 0.2s;flex-shrink:0;}
+  .gear-btn:active{color:var(--accent);}
+
+  /* SETTINGS PAGE */
+  .settings-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:800;overflow-y:auto;padding-bottom:60px;}
+  .settings-page.open{display:block;}
+  .settings-page-header{padding:calc(16px + var(--safe-top)) 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;position:sticky;top:0;background:var(--bg);z-index:1;}
+  .settings-back-btn{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:0;display:flex;align-items:center;}
+  .settings-back-btn:active{color:var(--accent);}
+  .settings-page-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--text);}
+  .settings-section{margin:20px 0 0;}
+  .settings-section-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);padding:0 20px 8px;}
+  .settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);cursor:pointer;background:var(--surface);}
+  .settings-row:first-of-type{border-top:1px solid var(--border);}
+  .settings-row:active{background:var(--bg);}
+  .settings-row-label{font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);}
+  .settings-row-value{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
+  .settings-divider{height:28px;}
+  .settings-io-wrap{padding:14px 20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .settings-io-label{font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);margin-bottom:10px;}
+
 </style>
 </head>
 <body>
@@ -551,38 +573,11 @@
         <div class="drawer-section-body" id="calSectionBody" style="padding:0;"></div>
       </div>
 
-      <!-- SETTINGS SECTION -->
-      <div class="drawer-section">
-        <div class="drawer-section-header" onclick="toggleDrawerSection('settings')">
-          <span class="drawer-section-title">⚙️ SETTINGS</span>
-          <span class="drawer-section-arrow" id="settingsArrow">▾</span>
-        </div>
-        <div class="drawer-section-body" id="settingsSectionBody">
-          <div class="drawer-setting-item" onclick="toggleEditModeFromDrawer()">
-            <span class="drawer-setting-label">Edit Mode</span>
-            <span class="drawer-setting-value" id="editModeLabel">OFF ›</span>
-          </div>
-          <div class="drawer-setting-item" onclick="resetWeekStart()">
-            <span class="drawer-setting-label">Reset Week Start</span>
-            <span class="drawer-setting-value" id="weekStartLabel">›</span>
-          </div>
-          <div class="drawer-setting-item" style="flex-direction:column;align-items:flex-start;gap:6px;">
-            <span class="drawer-setting-label">Data Backup</span>
-            <div class="io-row">
-              <button type="button" class="io-btn" onclick="exportData()">&#x2193; Export</button>
-              <button type="button" class="io-btn accent" onclick="document.getElementById('importFileInput').click()">&#x2191; Import</button>
-            </div>
-            <div class="io-status" id="ioStatus"></div>
-            <input type="file" id="importFileInput" class="import-hidden" accept=".json" onchange="importData(this)">
-          </div>
-          <div class="drawer-setting-item" onclick="openFeedbackForm()">
-            <span class="drawer-setting-label">Send Feedback</span>
-            <span class="drawer-setting-value">→</span>
-          </div>
-          <div class="drawer-setting-item" onclick="openThemeFromDrawer()">
-            <span class="drawer-setting-label">Color Theme</span>
-            <span class="drawer-setting-value" id="themeNameLabel">Default ›</span>
-          </div>
+      <!-- SETTINGS -->
+      <div class="drawer-section" id="drawerSettingsNav">
+        <div class="drawer-section-header" onclick="closeDrawer();openSettingsPage()">
+          <span class="drawer-section-title">&#x2699;&#xFE0E; SETTINGS</span>
+          <span class="drawer-section-arrow">&#8250;</span>
         </div>
       </div>
 
@@ -626,6 +621,7 @@
     <div class="dialog-btns">
       <button class="dialog-btn" onclick="closeConfirm()">CANCEL</button>
       <button class="dialog-btn danger" id="confirmOkBtn">DELETE</button>
+
     </div>
   </div>
 </div>
@@ -2297,6 +2293,40 @@ function showIOStatus(msg, isErr) {
   setTimeout(function() { el.className = 'io-status'; }, 3000);
 }
 
+
+// ── SETTINGS PAGE ─────────────────────────────────────────────────────────────
+function openSettingsPage() {
+  updateSettingsPageLabels();
+  document.getElementById('settingsPage').classList.add('open');
+}
+
+function closeSettingsPage() {
+  document.getElementById('settingsPage').classList.remove('open');
+}
+
+function updateSettingsPageLabels() {
+  var el1 = document.getElementById('spEditLabel');
+  var el2 = document.getElementById('spThemeLabel');
+  var el3 = document.getElementById('spWeekLabel');
+  if (el1) el1.textContent = editMode ? 'ON ›' : 'OFF ›';
+  if (el2) el2.textContent = (theme && theme.name ? theme.name : 'Default') + ' ›';
+  if (el3) {
+    var d = new Date(startDateStr);
+    el3.textContent = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + ' ›';
+  }
+}
+
+// Override showIOStatus to also update the settings page status
+var _origShowIOStatus = showIOStatus;
+function showIOStatus(msg, isErr) {
+  _origShowIOStatus(msg, isErr);
+  var el2 = document.getElementById('ioStatus2');
+  if (!el2) return;
+  el2.textContent = msg;
+  el2.className = 'io-status visible' + (isErr ? ' err' : '');
+  setTimeout(function() { el2.className = 'io-status'; }, 3000);
+}
+
 </script>
 
 <!-- FEEDBACK OVERLAY -->
@@ -2378,6 +2408,62 @@ function showIOStatus(msg, isErr) {
     </div>
     <div class="cal-grid" id="calGrid"></div>
   </div>
+</div>
+
+
+<!-- SETTINGS PAGE -->
+<div class="settings-page" id="settingsPage">
+  <div class="settings-page-header">
+    <button type="button" class="settings-back-btn" onclick="closeSettingsPage()">&#8249;</button>
+    <div class="settings-page-title">SETTINGS</div>
+  </div>
+
+  <!-- APPEARANCE -->
+  <div class="settings-section">
+    <div class="settings-section-label">Appearance</div>
+    <div class="settings-row" onclick="openTheme()">
+      <span class="settings-row-label">Color Theme</span>
+      <span class="settings-row-value" id="spThemeLabel">Default ›</span>
+    </div>
+  </div>
+
+  <!-- TRAINING -->
+  <div class="settings-section">
+    <div class="settings-section-label">Training</div>
+    <div class="settings-row" onclick="toggleEditModeFromDrawer();updateSettingsPageLabels()">
+      <span class="settings-row-label">Edit Mode</span>
+      <span class="settings-row-value" id="spEditLabel">OFF ›</span>
+    </div>
+    <div class="settings-row" onclick="resetWeekStart()">
+      <span class="settings-row-label">Reset Week Start</span>
+      <span class="settings-row-value" id="spWeekLabel">›</span>
+    </div>
+  </div>
+
+  <!-- DATA -->
+  <div class="settings-section">
+    <div class="settings-section-label">Data</div>
+    <div class="settings-io-wrap">
+      <div class="settings-io-label">Backup &amp; Restore</div>
+      <div class="io-row">
+        <button type="button" class="io-btn" onclick="exportData()">&#x2193; Export Backup</button>
+        <button type="button" class="io-btn accent" onclick="document.getElementById('importFileInput').click()">&#x2191; Import Backup</button>
+      </div>
+      <div class="io-status" id="ioStatus2"></div>
+    </div>
+  </div>
+
+  <!-- FEEDBACK -->
+  <div class="settings-section">
+    <div class="settings-section-label">Support</div>
+    <div class="settings-row" onclick="closeSettingsPage();openFeedbackForm()">
+      <span class="settings-row-label">Send Feedback</span>
+      <span class="settings-row-value">›</span>
+    </div>
+  </div>
+
+  <div class="settings-divider"></div>
+  <div style="padding:0 20px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);text-align:center;">REFORGED &mdash; PROGRESSIVE TRAINING TRACKER</div>
 </div>
 
 </body>
