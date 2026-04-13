@@ -923,9 +923,11 @@ function render() {
             else delta=`<span class="set-delta same">—</span>`;
           }
           const prev=prevW?`<span class="set-prev">${prevW}</span>`:'';
+          const defaultReps=repsLabel.split('–')[0].split('-')[0].trim();
+          const savedReps=getSetRepsVal(di,gi,ei,si,defaultReps);
           return `<div class="set-row">
             <span class="set-num">${si+1}</span>
-            <input class="set-reps-input" type="number" min="1" max="50" value="${esc(repsLabel.split('–')[0].split('-')[0].trim())}" onchange="saveSetRepsVal(${di},${gi},${ei},${si},this.value)" style="font-family:DM Mono,monospace;font-size:10px;width:44px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:3px 4px;border-radius:4px;text-align:center;outline:none;">
+            <input class="set-reps-input" type="number" min="1" max="50" value="${savedReps}" onchange="saveSetRepsVal(${di},${gi},${ei},${si},this.value)" style="font-family:DM Mono,monospace;font-size:10px;width:44px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:3px 4px;border-radius:4px;text-align:center;outline:none;">
             <div class="set-weight-wrap">
               <input class="set-weight-input" type="text" inputmode="decimal" placeholder="0 lbs"
                 value="${esc(wVal)}"
@@ -2174,8 +2176,10 @@ function parseLocalDateStr(str) {
 }
 
 function getWeekAndDow(year, month1, day) {
-  // Returns {week, dow} for a given date, relative to startDateStr
-  var start  = parseLocalDateStr(startDateStr);
+  // Mirror exactly how currentActualWeek calculates weeks
+  // Both use local midnight to avoid timezone issues
+  var startParts = startDateStr.split('-');
+  var start  = new Date(parseInt(startParts[0]), parseInt(startParts[1])-1, parseInt(startParts[2]));
   var target = new Date(year, month1-1, day);
   var diff   = Math.floor((target - start) / (7*24*60*60*1000));
   if (diff < 0) return null;
