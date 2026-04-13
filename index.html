@@ -2235,7 +2235,7 @@ function getDayStatus(year, month1, day) {
 // ── DATA IMPORT / EXPORT ──────────────────────────────────────────────────────
 var ALL_STORAGE_KEYS = [
   'workout_v9','program_v9','theme_v9','progress_v9','weights_v9',
-  'start_date_v9','total_weeks_v9','feedback_v9','restdays_v9',
+  'feedback_v9','restdays_v9',
   'weekdow_v9','setreps_v9'
 ];
 
@@ -2276,6 +2276,9 @@ function importData(input) {
           count++;
         }
       });
+      // Always clear start date and week count so they recalculate to current week
+      localStorage.removeItem('start_date_v9');
+      localStorage.removeItem('total_weeks_v9');
       showIOStatus(count + ' items restored. Reloading...', false);
       setTimeout(function() { location.reload(); }, 1500);
     } catch(err) {
