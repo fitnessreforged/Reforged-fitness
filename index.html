@@ -473,6 +473,30 @@
   .settings-io-wrap{padding:14px 20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
   .settings-io-label{font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);margin-bottom:10px;}
 
+
+  .font-size-wrap{padding:14px 20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .font-size-label{font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);margin-bottom:12px;}
+  .font-size-options{display:flex;gap:8px;}
+  .font-size-btn{flex:1;padding:10px 6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:var(--radius-sm);text-align:center;transition:all 0.2s;}
+  .font-size-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(var(--accent-rgb),0.08);}
+  .font-size-btn:active{opacity:0.7;}
+  .font-size-preview{display:flex;align-items:baseline;gap:6px;justify-content:center;}
+  .font-size-preview span{color:var(--muted);}
+
+
+  :root {
+    --font-base: 15px;
+    --font-ex: 14px;
+    --font-setnum: 10px;
+    --font-weight: 12px;
+  }
+  .ex-name-input { font-size: var(--font-ex) !important; }
+  .set-weight-input { font-size: var(--font-weight) !important; }
+  .set-num { font-size: var(--font-setnum) !important; }
+  body { font-size: var(--font-base); }
+  .settings-row-label { font-size: var(--font-base) !important; }
+  .drawer-section-title { font-size: var(--font-base) !important; }
+
 </style>
 </head>
 <body>
@@ -2483,6 +2507,39 @@ function navToCalDay(year, month1, day) {
   render();
 }
 
+
+// ── FONT SIZE ─────────────────────────────────────────────────────────────────
+var FONT_SIZE_KEY = 'fontsize_v9';
+var _fontSize = localStorage.getItem(FONT_SIZE_KEY) || 'default';
+
+var FONT_SIZES = {
+  small:   { base: '13px', exName: '12px', setNum: '9px',  weight: '14px' },
+  default: { base: '15px', exName: '14px', setNum: '10px', weight: '12px' },
+  large:   { base: '17px', exName: '16px', setNum: '11px', weight: '14px' }
+};
+
+function applyFontSize(size) {
+  var s = FONT_SIZES[size] || FONT_SIZES['default'];
+  document.documentElement.style.setProperty('--font-base',   s.base);
+  document.documentElement.style.setProperty('--font-ex',     s.exName);
+  document.documentElement.style.setProperty('--font-setnum', s.setNum);
+  document.documentElement.style.setProperty('--font-weight', s.weight);
+  // Update active button
+  ['small','default','large'].forEach(function(sz) {
+    var btn = document.getElementById('fsBtn' + sz.charAt(0).toUpperCase() + sz.slice(1));
+    if (btn) btn.className = 'font-size-btn' + (sz === size ? ' active' : '');
+  });
+}
+
+function setFontSize(size) {
+  _fontSize = size;
+  localStorage.setItem(FONT_SIZE_KEY, size);
+  applyFontSize(size);
+}
+
+// Apply on load
+applyFontSize(_fontSize);
+
 </script>
 
 <!-- FEEDBACK OVERLAY -->
@@ -2580,6 +2637,23 @@ function navToCalDay(year, month1, day) {
     <div class="settings-row" onclick="openTheme()">
       <span class="settings-row-label">Color Theme</span>
       <span class="settings-row-value" id="spThemeLabel">Default ›</span>
+    </div>
+    <div class="font-size-wrap">
+      <div class="font-size-label">Text Size</div>
+      <div class="font-size-options">
+        <button type="button" class="font-size-btn" id="fsBtnSmall" onclick="setFontSize('small')">
+          <div class="font-size-preview"><span style="font-size:11px;">Aa</span></div>
+          <div style="margin-top:4px;">Small</div>
+        </button>
+        <button type="button" class="font-size-btn" id="fsBtnDefault" onclick="setFontSize('default')">
+          <div class="font-size-preview"><span style="font-size:15px;">Aa</span></div>
+          <div style="margin-top:4px;">Default</div>
+        </button>
+        <button type="button" class="font-size-btn" id="fsBtnLarge" onclick="setFontSize('large')">
+          <div class="font-size-preview"><span style="font-size:19px;">Aa</span></div>
+          <div style="margin-top:4px;">Large</div>
+        </button>
+      </div>
     </div>
   </div>
 
