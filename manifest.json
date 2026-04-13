@@ -1,0 +1,18 @@
+{
+  "name": "Reforged",
+  "short_name": "Reforged",
+  "description": "Reforged \u2014 Progressive Training Tracker",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#d4f55e",
+  "theme_color": "#0f0f12",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
