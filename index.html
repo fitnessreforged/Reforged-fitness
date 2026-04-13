@@ -654,10 +654,10 @@ let startDateStr = (function() {
   let stored = localStorage.getItem(START_DATE_KEY);
   if (stored) {
     // Validate stored date is a Sunday — if not, snap to that week's Sunday
-    const d = new Date(stored);
+    var d = parseLocalDate(stored);
     if (d.getDay() !== 0) {
-      d.setDate(d.getDate() - d.getDay()); // rewind to Sunday
-      stored = d.toISOString().slice(0,10);
+      d.setDate(d.getDate() - d.getDay());
+      stored = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
       localStorage.setItem(START_DATE_KEY, stored);
     }
     return stored;
@@ -688,22 +688,26 @@ function countDone(di) { let n=0; days[di].groups.forEach((g,gi)=>g.exercises.fo
 
 // ── DATE ──────────────────────────────────────────────────────────────────────
 function todayMonday() {
-  // Sunday-anchored weeks to match Sun-Sat nav
-  const d=new Date();
-  const day=d.getDay(); // 0=Sun, 6=Sat
-  d.setDate(d.getDate()-day); // rewind to Sunday
-  return d.toISOString().slice(0,10);
+  var n=new Date();
+  var sun=new Date(n.getFullYear(), n.getMonth(), n.getDate()-n.getDay());
+  return sun.getFullYear()+'-'+String(sun.getMonth()+1).padStart(2,'0')+'-'+String(sun.getDate()).padStart(2,'0');
+}
+function parseLocalDate(str) {
+  var p=str.split('-');
+  return new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
 }
 function weekLabel(weekNum) {
-  const start=new Date(startDateStr);
+  var start=parseLocalDate(startDateStr);
   start.setDate(start.getDate()+(weekNum-1)*7);
   const end=new Date(start); end.setDate(end.getDate()+6);
   const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
   return `${fmt(start)} – ${fmt(end)}`;
 }
 function currentActualWeek() {
-  const start=new Date(startDateStr), now=new Date();
-  const diff=Math.floor((now-start)/(7*24*60*60*1000));
+  var start=parseLocalDate(startDateStr);
+  var now=new Date();
+  var today=new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var diff=Math.floor((today-start)/(7*24*60*60*1000));
   return Math.max(1,diff+1);
 }
 
@@ -878,7 +882,7 @@ function render() {
   const isCW = isCurrentW();
 
   const _DOW = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-  const _weekStart = new Date(startDateStr);
+  const _weekStart = parseLocalDate(startDateStr);
   _weekStart.setDate(_weekStart.getDate() + (currentWeek-1)*7);
   let _navHTML = '';
   for (let _dow=0; _dow<7; _dow++) {
