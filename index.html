@@ -2450,6 +2450,7 @@ function showIOStatus(msg, isErr) {
         <button type="button" class="io-btn accent" onclick="document.getElementById('importFileInput').click()">&#x2191; Import Backup</button>
       </div>
       <div class="io-status" id="ioStatus2"></div>
+      <input type="file" id="importFileInput" class="import-hidden" accept=".json" onchange="importData(this)">
     </div>
   </div>
 
