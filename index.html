@@ -541,7 +541,7 @@
     <div class="drawer-body" id="drawerBody">
 
       <!-- WEEKS SECTION -->
-      <div class="drawer-section" id="drawerWeeksSection">
+      <div class="drawer-section collapsed" id="drawerWeeksSection">
         <div class="drawer-section-header" onclick="toggleDrawerSection('weeks')">
           <span class="drawer-section-title">📅 WORKOUT WEEKS</span>
           <span class="drawer-section-arrow" id="weeksArrow">▾</span>
@@ -550,7 +550,7 @@
       </div>
 
       <!-- LIBRARY SECTION -->
-      <div class="drawer-section" id="drawerLibSection">
+      <div class="drawer-section collapsed" id="drawerLibSection">
         <div class="drawer-section-header" onclick="toggleDrawerSection('lib')">
           <span class="drawer-section-title">📚 EXERCISE LIBRARY</span>
           <span class="drawer-section-arrow" id="libArrow">▾</span>
@@ -565,16 +565,16 @@
       </div>
 
       <!-- CALENDAR SECTION -->
-      <div class="drawer-section" id="drawerCalSection">
+      <div class="drawer-section collapsed" id="drawerCalSection">
         <div class="drawer-section-header" onclick="toggleDrawerSection('cal')">
           <span class="drawer-section-title">&#x1F4C6; CALENDAR</span>
-          <span class="drawer-section-arrow" id="calArrow">&#9662;</span>
+          <span class="drawer-section-arrow" id="calArrow" style="transform:rotate(-90deg)">&#9662;</span>
         </div>
         <div class="drawer-section-body" id="calSectionBody" style="padding:0;"></div>
       </div>
 
       <!-- SETTINGS -->
-      <div class="drawer-section" id="drawerSettingsNav">
+      <div class="drawer-section collapsed" id="drawerSettingsNav">
         <div class="drawer-section-header" onclick="closeDrawer();openSettingsPage()">
           <span class="drawer-section-title">&#x2699;&#xFE0E; SETTINGS</span>
           <span class="drawer-section-arrow">&#8250;</span>
