@@ -2513,9 +2513,11 @@ var FONT_SIZE_KEY = 'fontsize_v9';
 var _fontSize = localStorage.getItem(FONT_SIZE_KEY) || 'default';
 
 var FONT_SIZES = {
-  small:   { base: '13px', exName: '12px', setNum: '9px',  weight: '14px' },
+  xs:      { base: '12px', exName: '11px', setNum: '8px',  weight: '11px' },
+  small:   { base: '13px', exName: '12px', setNum: '9px',  weight: '12px' },
   default: { base: '15px', exName: '14px', setNum: '10px', weight: '12px' },
-  large:   { base: '17px', exName: '16px', setNum: '11px', weight: '14px' }
+  large:   { base: '17px', exName: '16px', setNum: '11px', weight: '14px' },
+  xl:      { base: '19px', exName: '18px', setNum: '13px', weight: '16px' }
 };
 
 function applyFontSize(size) {
@@ -2525,7 +2527,7 @@ function applyFontSize(size) {
   document.documentElement.style.setProperty('--font-setnum', s.setNum);
   document.documentElement.style.setProperty('--font-weight', s.weight);
   // Update active button
-  ['small','default','large'].forEach(function(sz) {
+  ['xs','small','default','large','xl'].forEach(function(sz) {
     var btn = document.getElementById('fsBtn' + sz.charAt(0).toUpperCase() + sz.slice(1));
     if (btn) btn.className = 'font-size-btn' + (sz === size ? ' active' : '');
   });
@@ -2641,17 +2643,25 @@ applyFontSize(_fontSize);
     <div class="font-size-wrap">
       <div class="font-size-label">Text Size</div>
       <div class="font-size-options">
+        <button type="button" class="font-size-btn" id="fsBtnXs" onclick="setFontSize('xs')">
+          <div class="font-size-preview"><span style="font-size:10px;">Aa</span></div>
+          <div style="margin-top:4px;">XS</div>
+        </button>
         <button type="button" class="font-size-btn" id="fsBtnSmall" onclick="setFontSize('small')">
-          <div class="font-size-preview"><span style="font-size:11px;">Aa</span></div>
-          <div style="margin-top:4px;">Small</div>
+          <div class="font-size-preview"><span style="font-size:13px;">Aa</span></div>
+          <div style="margin-top:4px;">S</div>
         </button>
         <button type="button" class="font-size-btn" id="fsBtnDefault" onclick="setFontSize('default')">
-          <div class="font-size-preview"><span style="font-size:15px;">Aa</span></div>
-          <div style="margin-top:4px;">Default</div>
+          <div class="font-size-preview"><span style="font-size:16px;">Aa</span></div>
+          <div style="margin-top:4px;">M</div>
         </button>
         <button type="button" class="font-size-btn" id="fsBtnLarge" onclick="setFontSize('large')">
           <div class="font-size-preview"><span style="font-size:19px;">Aa</span></div>
-          <div style="margin-top:4px;">Large</div>
+          <div style="margin-top:4px;">L</div>
+        </button>
+        <button type="button" class="font-size-btn" id="fsBtnXl" onclick="setFontSize('xl')">
+          <div class="font-size-preview"><span style="font-size:22px;">Aa</span></div>
+          <div style="margin-top:4px;">XL</div>
         </button>
       </div>
     </div>
