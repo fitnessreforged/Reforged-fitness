@@ -57,6 +57,9 @@
   /* EDIT BANNER */
   .edit-banner{display:none;border-bottom:1px solid rgba(var(--accent-rgb),0.2);padding:7px 20px;font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;text-align:center;}
   .edit-banner.visible{display:block;background:rgba(var(--accent-rgb),0.07);}
+  .fab-timer{position:fixed;bottom:calc(24px + var(--safe-bottom));right:calc(20px + 86px + 24px);z-index:200;font-family:'DM Mono',monospace;font-size:18px;background:var(--surface);color:var(--muted);border:1px solid var(--border);width:44px;height:44px;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,0.35);border-radius:50px;display:flex;align-items:center;justify-content:center;}
+  .fab-timer.active{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+  .fab-timer:active{opacity:0.8;}
   .fab-edit{position:fixed;bottom:calc(24px + var(--safe-bottom));right:20px;z-index:200;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;background:var(--surface);color:var(--muted);border:1px solid var(--border);padding:11px 18px;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,0.35);transition:all 0.2s;border-radius:50px;}
   .fab-edit.active{background:var(--accent);color:var(--bg);border-color:var(--accent);box-shadow:0 6px 24px rgba(var(--accent-rgb),0.25);}
   .fab-edit:active{opacity:0.8;}
@@ -497,6 +500,41 @@
   .settings-row-label { font-size: var(--font-base) !important; }
   .drawer-section-title { font-size: var(--font-base) !important; }
 
+
+  .dup-set-btn{background:none;border:none;color:var(--border);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;line-height:1;transition:color 0.15s;}
+  .dup-set-btn:active{color:var(--accent);}
+
+
+  .ex-notes-wrap{padding:4px 8px 8px 48px;}
+  .ex-notes-input{width:100%;background:none;border:none;border-bottom:1px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;padding:4px 2px;outline:none;resize:none;line-height:1.4;}
+  .ex-notes-input:focus{border-bottom-color:var(--accent);color:var(--text);}
+  .ex-notes-input::placeholder{color:var(--border);}
+  .ex-notes-toggle{background:none;border:none;color:var(--border);font-size:11px;cursor:pointer;padding:0 6px;flex-shrink:0;font-family:'DM Mono',monospace;letter-spacing:1px;}
+  .ex-notes-toggle:active{color:var(--accent);}
+  .ex-notes-toggle.has-note{color:var(--dim);}
+
+
+  .timer-bar{position:fixed;bottom:3px;left:0;right:0;z-index:500;display:none;flex-direction:column;align-items:center;padding:10px 16px 14px;background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -4px 24px rgba(0,0,0,0.4);}
+  .timer-bar.open{display:flex;}
+  .timer-row1{display:flex;align-items:center;width:100%;max-width:480px;gap:10px;margin-bottom:8px;}
+  .timer-display-wrap{display:flex;flex-direction:column;align-items:center;cursor:pointer;min-width:80px;}
+  .timer-display{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:3px;color:var(--accent);line-height:1;text-align:center;}
+  .timer-display.editing{display:none;}
+  .timer-input{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:3px;color:var(--accent);background:none;border:none;border-bottom:2px solid var(--accent);outline:none;width:100px;text-align:center;display:none;}
+  .timer-input.editing{display:block;}
+  .timer-tap-hint{font-family:'DM Mono',monospace;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+  .timer-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);flex:1;}
+  .timer-main-btns{display:flex;gap:6px;align-items:center;}
+  .timer-ctrl-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:7px 10px;cursor:pointer;border-radius:var(--radius-sm);}
+  .timer-ctrl-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);min-width:64px;}
+  .timer-ctrl-btn:active{opacity:0.7;}
+  .timer-row2{display:flex;align-items:center;width:100%;max-width:480px;gap:6px;}
+  .timer-adj-btn{flex:1;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;background:var(--bg);border:1px solid var(--border);color:var(--muted);padding:6px 4px;cursor:pointer;border-radius:var(--radius-sm);text-align:center;}
+  .timer-adj-btn:active{border-color:var(--accent);color:var(--accent);}
+  .timer-progress-track{width:100%;max-width:480px;height:2px;background:var(--border);margin-top:8px;border-radius:1px;}
+  .timer-progress-fill{height:100%;background:var(--accent);border-radius:1px;transition:width 0.9s linear;}
+  .timer-done .timer-display{color:var(--accent2);}
+
 </style>
 </head>
 <body>
@@ -550,6 +588,7 @@
 </div>
 
 <div class="edit-banner" id="editBanner">EDIT MODE ACTIVE</div>
+<button class="fab-timer" id="fabTimer" onclick="timerOpen()">&#x23F1;</button>
 <button class="fab-edit" id="fabEdit" onclick="toggleEditModeFromDrawer()">✏️ EDIT</button>
 <nav class="day-nav" id="dayNav"></nav>
 <div class="content" id="mainContent"></div>
@@ -656,6 +695,7 @@
 const WORKOUT_KEY='workout_v9',PROGRAM_KEY='program_v9',THEME_KEY='theme_v9';
 const PROGRESS_KEY='progress_v9',WEIGHTS_KEY='weights_v9',START_DATE_KEY='start_date_v9';
 const TOTAL_WEEKS_KEY='total_weeks_v9';
+const EXNOTES_KEY='exnotes_v9';
 const FEEDBACK_KEY='feedback_v9';
 const RESTDAYS_KEY='restdays_v9';
 const WEEKDOW_KEY='weekdow_v9';
@@ -668,6 +708,7 @@ let progress = load(PROGRESS_KEY, {});
 let weights  = load(WEIGHTS_KEY, {});
 let feedback = load(FEEDBACK_KEY, {});
 let restDays = load(RESTDAYS_KEY, {});
+let exNotes  = load(EXNOTES_KEY,  {});
 let weekDow  = load(WEEKDOW_KEY,  {});
 let editMode = false, currentDay = 0;
 let libActiveTab = 0, libSearchQuery = '';
@@ -703,6 +744,7 @@ function saveProgress(){ localStorage.setItem(PROGRESS_KEY, JSON.stringify(progr
 function saveWeights()  { localStorage.setItem(WEIGHTS_KEY,  JSON.stringify(weights));  }
 function saveFeedback() { localStorage.setItem(FEEDBACK_KEY, JSON.stringify(feedback)); }
 function saveRestDays() { localStorage.setItem(RESTDAYS_KEY, JSON.stringify(restDays)); }
+function saveExNotes()  { localStorage.setItem(EXNOTES_KEY,  JSON.stringify(exNotes));  }
 function saveWeekDow()  { localStorage.setItem(WEEKDOW_KEY,  JSON.stringify(weekDow));  }
 function saveTotalWeeks(){ localStorage.setItem(TOTAL_WEEKS_KEY, String(totalWeeks)); }
 function load(k,def)   { try { var v=JSON.parse(localStorage.getItem(k)); return v !== null ? v : def; } catch(e) { return def; } }
@@ -979,6 +1021,7 @@ function render() {
                 ${isPastWeek()?'readonly':''} style="${isPastWeek()?'opacity:0.6;':''}"/>
             </div>
             <div style="display:flex;align-items:center;gap:4px;font-size:9px;">${prev}${delta}</div>
+            <button type="button" class="dup-set-btn" onclick="duplicateSet(${di},${gi},${ei},${si})" title="Duplicate set">⊕</button>
           </div>`;
         }).join('');
         // Summary of logged weights
@@ -999,6 +1042,7 @@ function render() {
             ${setsHTML}
             <button class="btn-icon del-btn${editMode?' visible':''}" onclick="deleteExercise(${di},${gi},${ei})">×</button>
           </div>
+          ${buildExNotes(di,gi,ei)}
           <div class="set-toggle" id="toggle-${dropId}" onclick="toggleSetDrop('${dropId}')">
             <span class="set-toggle-label">${setCount} SETS</span>
             <span class="set-toggle-arrow">›</span>
@@ -1670,6 +1714,7 @@ function onSetsChange(di,gi,ei,val){
         +' value="'+wv+'" onchange="updateSetWeight('+di+','+gi+','+ei+','+si+',this.value)"'
         +(past?' readonly':'')+' style="'+(past?'opacity:0.6;':'')+'"></div>'
         +'<div style="display:flex;align-items:center;gap:4px;font-size:9px;">'+prev+delta+'</div>'
+        +'<button type="button" class="dup-set-btn" onclick="duplicateSet('+di+','+gi+','+ei+','+si+')" title="Duplicate set">⊕</button>'
         +'</div>';
     }
     rowsEl.innerHTML=rows;
@@ -2272,7 +2317,7 @@ function getDayStatus(year, month1, day) {
 // ── DATA IMPORT / EXPORT ──────────────────────────────────────────────────────
 var ALL_STORAGE_KEYS = [
   'workout_v9','program_v9','theme_v9','progress_v9','weights_v9',
-  'feedback_v9','restdays_v9',
+  'feedback_v9','restdays_v9','exnotes_v9',
   'weekdow_v9','setreps_v9'
 ];
 
@@ -2542,6 +2587,195 @@ function setFontSize(size) {
 // Apply on load
 applyFontSize(_fontSize);
 
+
+// ── DUPLICATE SET ─────────────────────────────────────────────────────────────
+function duplicateSet(di, gi, ei, si) {
+  var ex = days[di].groups[gi].exercises[ei];
+  var parsed = parseSets(ex.sets);
+  var newCount = parsed.count + 1;
+  if (newCount > 10) return; // max 10 sets
+
+  // Copy weight from this set
+  var wVal = weights[wKey(di,gi,ei,si)] || '';
+  weights[wKey(di,gi,ei,newCount-1)] = wVal;
+
+  // Copy reps from this set
+  var srk = currentWeek+'-'+di+'-'+gi+'-'+ei+'-r'+si;
+  var srData = JSON.parse(localStorage.getItem('setreps_v9')||'{}');
+  var repsVal = srData[srk] !== undefined ? srData[srk] : parsed.reps.split('–')[0].split('-')[0].trim();
+  srData[currentWeek+'-'+di+'-'+gi+'-'+ei+'-r'+(newCount-1)] = repsVal;
+  localStorage.setItem('setreps_v9', JSON.stringify(srData));
+  setReps = JSON.parse(localStorage.getItem('setreps_v9')||'{}');
+
+  // Update set count
+  updateExSets(di, gi, ei, newCount + ' × ' + parsed.reps);
+  saveWeights();
+
+  // Update the set rows in-place without closing them
+  var dropId = 'drop-'+di+'-'+gi+'-'+ei;
+  var rowsEl  = document.getElementById(dropId);
+  var toggleEl = document.getElementById('toggle-'+dropId);
+  var wasOpen = rowsEl && rowsEl.classList.contains('open');
+
+  // Full re-render
+  render();
+
+  // Re-open the rows if they were open
+  if (wasOpen) {
+    var rowsEl2  = document.getElementById(dropId);
+    var toggleEl2 = document.getElementById('toggle-'+dropId);
+    if (rowsEl2)   rowsEl2.classList.add('open');
+    if (toggleEl2) toggleEl2.classList.add('open');
+  }
+}
+
+
+// ── EXERCISE NOTES ────────────────────────────────────────────────────────────
+function exNoteKey(di,gi,ei) { return currentWeek+'-'+di+'-'+gi+'-'+ei+'-note'; }
+
+function buildExNotes(di,gi,ei) {
+  var k = exNoteKey(di,gi,ei);
+  var note = exNotes[k] || '';
+  var hasNote = note.length > 0;
+  return '<div class="ex-notes-wrap" id="exnote-wrap-'+di+'-'+gi+'-'+ei+'">'
+    + '<textarea class="ex-notes-input" rows="1" placeholder="Notes (e.g. used straps, narrow grip...)"'
+    + ' onchange="saveExNote('+di+','+gi+','+ei+',this.value)"'
+    + ' oninput="autoResizeNotes(this)"'
+    + '>'+escapeHtml(note)+'</textarea>'
+    + '</div>';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function saveExNote(di,gi,ei,val) {
+  var k = exNoteKey(di,gi,ei);
+  if (val.trim()) exNotes[k] = val;
+  else delete exNotes[k];
+  saveExNotes();
+}
+
+function autoResizeNotes(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+
+// ── REST TIMER ────────────────────────────────────────────────────────────────
+var _tmTotal   = 90;
+var _tmRemain  = 90;
+var _tmRunning = false;
+var _tmInt     = null;
+
+function timerOpen() {
+  document.getElementById('timerBar').classList.add('open');
+  var fb=document.getElementById('fabTimer'); if(fb) fb.classList.add('active');
+  timerUpdateDisplay();
+  timerUpdateFill();
+}
+
+function timerClose() {
+  timerStop();
+  document.getElementById('timerBar').classList.remove('open');
+  var fb=document.getElementById('fabTimer'); if(fb) fb.classList.remove('active');
+}
+
+function timerPreset(secs) {
+  timerStop();
+  _tmTotal = secs; _tmRemain = secs;
+  timerUpdateDisplay();
+  timerUpdateFill();
+  document.getElementById('timerStartBtn').textContent = 'START';
+  document.getElementById('timerBar').classList.remove('timer-done');
+}
+
+function timerAdjust(delta) {
+  _tmRemain = Math.max(5, _tmRemain + delta);
+  if (!_tmRunning) { _tmTotal = _tmRemain; }
+  timerUpdateDisplay();
+  timerUpdateFill();
+}
+
+function timerToggle() {
+  if (_tmRunning) { timerStop(); return; }
+  if (_tmRemain <= 0) { timerPreset(_tmTotal); }
+  _tmRunning = true;
+  document.getElementById('timerStartBtn').textContent = 'PAUSE';
+  document.getElementById('timerBar').classList.remove('timer-done');
+  _tmInt = setInterval(timerTick, 1000);
+}
+
+function timerStop() {
+  _tmRunning = false;
+  clearInterval(_tmInt); _tmInt = null;
+  var btn = document.getElementById('timerStartBtn');
+  if (btn) btn.textContent = _tmRemain > 0 ? 'RESUME' : 'RESTART';
+}
+
+function timerTick() {
+  _tmRemain = Math.max(0, _tmRemain - 1);
+  timerUpdateDisplay();
+  timerUpdateFill();
+  if (_tmRemain <= 0) {
+    timerStop();
+    document.getElementById('timerBar').classList.add('timer-done');
+    document.getElementById('timerStartBtn').textContent = 'RESTART';
+    if (navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
+  }
+}
+
+function timerUpdateDisplay() {
+  var m = Math.floor(_tmRemain / 60);
+  var s = _tmRemain % 60;
+  var el = document.getElementById('timerDisplay');
+  if (el) el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+function timerUpdateFill() {
+  var pct = _tmTotal > 0 ? (_tmRemain / _tmTotal) * 100 : 0;
+  var el = document.getElementById('timerFill');
+  if (el) el.style.width = pct.toFixed(1) + '%';
+}
+
+function timerClickDisplay() {
+  var disp = document.getElementById('timerDisplay');
+  var inp  = document.getElementById('timerInput');
+  if (!disp || !inp) return;
+  timerStop();
+  inp.value = disp.textContent;
+  disp.classList.add('editing');
+  inp.classList.add('editing');
+  inp.focus();
+  inp.select();
+}
+
+function timerInputDone() {
+  var disp = document.getElementById('timerDisplay');
+  var inp  = document.getElementById('timerInput');
+  if (!disp || !inp) return;
+  disp.classList.remove('editing');
+  inp.classList.remove('editing');
+  // Parse m:ss or just seconds
+  var val = inp.value.trim();
+  var secs = 0;
+  if (val.indexOf(':') >= 0) {
+    var parts = val.split(':');
+    secs = parseInt(parts[0]) * 60 + parseInt(parts[1] || 0);
+  } else {
+    secs = parseInt(val);
+  }
+  if (!isNaN(secs) && secs > 0) {
+    _tmTotal = secs; _tmRemain = secs;
+    timerUpdateDisplay();
+    timerUpdateFill();
+    document.getElementById('timerStartBtn').textContent = 'START';
+    document.getElementById('timerBar').classList.remove('timer-done');
+  } else {
+    timerUpdateDisplay();
+  }
+}
+
 </script>
 
 <!-- FEEDBACK OVERLAY -->
@@ -2705,6 +2939,34 @@ applyFontSize(_fontSize);
 
   <div class="settings-divider"></div>
   <div style="padding:0 20px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);text-align:center;">REFORGED &mdash; PROGRESSIVE TRAINING TRACKER</div>
+</div>
+
+
+<!-- REST TIMER -->
+<div class="timer-bar" id="timerBar">
+  <div class="timer-row1">
+    <div class="timer-display-wrap" onclick="timerClickDisplay()" title="Tap to type custom time">
+      <div class="timer-display" id="timerDisplay">1:30</div>
+      <input class="timer-input" id="timerInput" type="text" placeholder="1:30" onblur="timerInputDone()" onkeydown="if(event.key==='Enter')timerInputDone()">
+      <div class="timer-tap-hint">TAP TO EDIT</div>
+    </div>
+    <div class="timer-label">REST TIMER</div>
+    <div class="timer-main-btns">
+      <button type="button" class="timer-ctrl-btn primary" id="timerStartBtn" onclick="timerToggle()">START</button>
+      <button type="button" class="timer-ctrl-btn" onclick="timerClose()">&#x2715;</button>
+    </div>
+  </div>
+  <div class="timer-row2">
+    <button type="button" class="timer-adj-btn" onclick="timerAdjust(-30)">&minus;30s</button>
+    <button type="button" class="timer-adj-btn" onclick="timerAdjust(-15)">&minus;15s</button>
+    <button type="button" class="timer-adj-btn" onclick="timerAdjust(15)">+15s</button>
+    <button type="button" class="timer-adj-btn" onclick="timerAdjust(30)">+30s</button>
+    <button type="button" class="timer-adj-btn" onclick="timerPreset(60)">1m</button>
+    <button type="button" class="timer-adj-btn" onclick="timerPreset(90)">1:30</button>
+    <button type="button" class="timer-adj-btn" onclick="timerPreset(120)">2m</button>
+    <button type="button" class="timer-adj-btn" onclick="timerPreset(180)">3m</button>
+  </div>
+  <div class="timer-progress-track"><div class="timer-progress-fill" id="timerFill" style="width:100%"></div></div>
 </div>
 
 </body>
