@@ -2667,6 +2667,7 @@ var _tmTotal   = 90;
 var _tmRemain  = 90;
 var _tmRunning = false;
 var _tmInt     = null;
+var _tmEndTime = 0;
 
 function timerOpen() {
   document.getElementById('timerBar').classList.add('open');
@@ -2701,20 +2702,29 @@ function timerToggle() {
   if (_tmRunning) { timerStop(); return; }
   if (_tmRemain <= 0) { timerPreset(_tmTotal); }
   _tmRunning = true;
+  _tmEndTime = Date.now() + (_tmRemain * 1000);
+  localStorage.setItem('timer_end', String(_tmEndTime));
+  localStorage.setItem('timer_total', String(_tmTotal));
   document.getElementById('timerStartBtn').textContent = 'PAUSE';
   document.getElementById('timerBar').classList.remove('timer-done');
   _tmInt = setInterval(timerTick, 1000);
+  timerRequestNotif(_tmRemain);
 }
 
 function timerStop() {
   _tmRunning = false;
   clearInterval(_tmInt); _tmInt = null;
+  localStorage.removeItem('timer_end');
   var btn = document.getElementById('timerStartBtn');
   if (btn) btn.textContent = _tmRemain > 0 ? 'RESUME' : 'RESTART';
 }
 
 function timerTick() {
-  _tmRemain = Math.max(0, _tmRemain - 1);
+  if (_tmEndTime) {
+    _tmRemain = Math.max(0, Math.round((_tmEndTime - Date.now()) / 1000));
+  } else {
+    _tmRemain = Math.max(0, _tmRemain - 1);
+  }
   timerUpdateDisplay();
   timerUpdateFill();
   if (_tmRemain <= 0) {
@@ -2775,6 +2785,67 @@ function timerInputDone() {
     timerUpdateDisplay();
   }
 }
+
+
+function timerRequestNotif(secs) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    setTimeout(function() {
+      if (_tmRemain > 0) return;
+      try { new Notification('Rest Over - Get back to it!', {icon:'./icon.svg',tag:'rest-timer'}); } catch(e) {}
+    }, secs * 1000);
+  } else if (Notification.permission !== 'denied') {
+    Notification.requestPermission();
+  }
+}
+
+function timerResumeFromStorage() {
+  var savedEnd   = localStorage.getItem('timer_end');
+  var savedTotal = localStorage.getItem('timer_total');
+  if (!savedEnd) return;
+  var endTime = parseInt(savedEnd);
+  var remain  = Math.round((endTime - Date.now()) / 1000);
+  if (remain <= 0) {
+    localStorage.removeItem('timer_end');
+    _tmTotal  = parseInt(savedTotal) || 90;
+    _tmRemain = 0;
+    _tmEndTime = 0;
+    timerOpen();
+    timerUpdateDisplay();
+    timerUpdateFill();
+    document.getElementById('timerBar').classList.add('timer-done');
+    var btn = document.getElementById('timerStartBtn');
+    if (btn) btn.textContent = 'RESTART';
+    if (navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
+  } else {
+    _tmTotal   = parseInt(savedTotal) || 90;
+    _tmRemain  = remain;
+    _tmEndTime = endTime;
+    timerOpen();
+    _tmRunning = true;
+    var btn = document.getElementById('timerStartBtn');
+    if (btn) btn.textContent = 'PAUSE';
+    document.getElementById('timerBar').classList.remove('timer-done');
+    _tmInt = setInterval(timerTick, 1000);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() { timerResumeFromStorage(); });
+
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden || !_tmEndTime) return;
+  _tmRemain = Math.max(0, Math.round((_tmEndTime - Date.now()) / 1000));
+  timerUpdateDisplay();
+  timerUpdateFill();
+  if (_tmRemain <= 0 && _tmRunning) {
+    localStorage.removeItem('timer_end');
+    timerStop();
+    document.getElementById('timerBar').classList.add('timer-done');
+    var btn = document.getElementById('timerStartBtn');
+    if (btn) btn.textContent = 'RESTART';
+    if (navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
+  }
+});
 
 </script>
 
