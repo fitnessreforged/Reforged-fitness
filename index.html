@@ -1029,7 +1029,7 @@ function render() {
         const summary = loggedWeights.length ? loggedWeights.join(' / ')+' lbs' : 'tap to log';
         const dropId = `drop-${di}-${gi}-${ei}`;
         return `<div class="exercise ${isDone?'done':''}" id="ex-${di}-${gi}-${ei}">
-          <div class="exercise-main" draggable="${editMode?'true':'false'}" ondragstart="onDragStart(event,${di},${gi},${ei})" ondragover="onDragOver(event)" ondrop="onDrop(event,${di},${gi},${ei})" ondragend="onDragEnd(event)" ontouchstart="onTouchStart(event,${di},${gi},${ei})" ontouchmove="onTouchMove(event)" ontouchend="onTouchEnd(event,${di},${gi},${ei})">
+          <div class="exercise-main" draggable="${editMode?'true':'false'}" ondragstart="onDragStart(event,${di},${gi},${ei})" ondragover="onDragOver(event)" ondrop="onDrop(event,${di},${gi},${ei})" ondragend="onDragEnd(event)" ontouchstart="onTouchStart(event,${di},${gi},${ei})" ontouchmove="onTouchMove(event)" ontouchend="onTouchEnd(event,${di},${gi},${ei})" ontouchcancel="onTouchCancel()">
             <span class="drag-handle">⠿</span>
             <span class="check-col" onclick="toggleExercise(${di},${gi},${ei})">${isDone?'✓':'○'}</span>
             ${editMode
@@ -1884,9 +1884,13 @@ function onDrop(e, di, gi, ei) {
 
 function onDragEnd(e) {
   _dragSrc = null;
-  document.querySelectorAll('.dragging,.drag-over').forEach(function(el){
-    el.classList.remove('dragging','drag-over');
+  document.querySelectorAll('.dragging,.drag-over,.drag-placeholder').forEach(function(el){
+    el.classList.remove('dragging','drag-over','drag-placeholder');
+    el.style.opacity = '';
+    el.style.transform = '';
   });
+  // Clean up any stuck touch clone
+  dragCleanup();
 }
 
 // Touch drag support
@@ -2831,7 +2835,14 @@ function timerResumeFromStorage() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', function() { timerResumeFromStorage(); });
+document.addEventListener('DOMContentLoaded', function() {
+  timerResumeFromStorage();
+  // Safety net: clean up any stuck drag state on scroll or tap
+  document.addEventListener('scroll', function(){ if(_touchSrc||_dragSrc) dragCleanup(); }, true);
+  document.addEventListener('touchstart', function(e){
+    if ((_touchSrc||_dragSrc) && !e.target.closest('[draggable]')) dragCleanup();
+  }, true);
+});
 
 document.addEventListener('visibilitychange', function() {
   if (document.hidden || !_tmEndTime) return;
@@ -2847,6 +2858,22 @@ document.addEventListener('visibilitychange', function() {
     if (navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
   }
 });
+
+
+function dragCleanup() {
+  // Remove any stuck touch clone elements
+  document.querySelectorAll('.touch-drag-clone').forEach(function(el){ el.remove(); });
+  if (_touchClone) { try { _touchClone.remove(); } catch(e) {} _touchClone = null; }
+  _touchSrc = null;
+  _dragSrc  = null;
+  document.querySelectorAll('.dragging,.drag-over').forEach(function(el){
+    el.classList.remove('dragging','drag-over');
+    el.style.opacity = '';
+    el.style.transform = '';
+  });
+}
+
+function onTouchCancel() { dragCleanup(); }
 
 </script>
 
